@@ -5,7 +5,6 @@ import SentimentChart from './components/SentimentChart';
 import SocialMentions from './components/SocialMentions';
 import PredictionCard from './components/PredictionCard';
 import LoadingSpinner from './components/LoadingSpinner';
-import { mockCryptoData } from './utils/mockData';
 import './App.css';
 
 function App() {
@@ -31,27 +30,97 @@ function App() {
   //   }, 2000);
   // };
 
+//   const handleSearch = async (cryptoName) => {
+//   setIsLoading(true);
+//   setError(null);
+  
+//   try {
+//     // Call your Flask backend API
+//     const response = await fetch('http://localhost:5000/analyze', {
+//       method: 'POST',
+//       headers: {
+//         'Content-Type': 'application/json',
+//       },
+//       body: JSON.stringify({ crypto_name: cryptoName }),
+//     });
+    
+//     if (!response.ok) {
+//       throw new Error('Failed to fetch data');
+//     }
+    
+//     const data = await response.json();
+//     setCryptoData(data);
+    
+//   } catch (err) {
+//     console.error('Error:', err);
+//     setError(`Failed to analyze ${cryptoName}. Please try again.`);
+//   } finally {
+//     setIsLoading(false);
+//   }
+// };
+
   const handleSearch = async (cryptoName) => {
   setIsLoading(true);
   setError(null);
-  
+
   try {
-    // Call your Flask backend API
-    const response = await fetch('http://localhost:5000/analyze', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ crypto_name: cryptoName }),
-    });
-    
-    if (!response.ok) {
-      throw new Error('Failed to fetch data');
-    }
-    
+    //const response = await fetch(`http://localhost:5000/api/crypto/${cryptoName.toLowerCase()}`);
+    const response = await fetch(`http://localhost:5000/api/crypto/${cryptoName.toLowerCase()}`);
+
+    if (!response.ok) throw new Error('Failed to fetch data');
+
     const data = await response.json();
     setCryptoData(data);
-    
+    let formattedData = null;
+
+if (cryptoData) {
+  formattedData = {
+    name: cryptoData.crypto.charAt(0).toUpperCase() + cryptoData.crypto.slice(1),
+    symbol: cryptoData.crypto.slice(0, 3).toUpperCase(),
+    price: cryptoData.price_usd,
+    change24h: cryptoData.counts?.percent_change_24h || 0, // if you fetch it
+    marketCap: cryptoData.counts?.market_cap || 'N/A',       // optional
+    sentiment: {
+      overall:
+        cryptoData.average_sentiment > 0.05
+          ? 'Positive'
+          : cryptoData.average_sentiment < -0.05
+          ? 'Negative'
+          : 'Neutral',
+      confidence: cryptoData.confidence ? Math.round(cryptoData.confidence * 100) : 0
+    },
+    distribution: {
+      positive: Math.round(Math.max(cryptoData.reddit.average_sentiment, cryptoData.twitter.average_sentiment) * 100),
+      negative: Math.round(Math.abs(Math.min(cryptoData.reddit.average_sentiment, cryptoData.twitter.average_sentiment)) * 100),
+      neutral: 100 - Math.round(Math.max(cryptoData.reddit.average_sentiment, cryptoData.twitter.average_sentiment) * 100) - Math.round(Math.abs(Math.min(cryptoData.reddit.average_sentiment, cryptoData.twitter.average_sentiment)) * 100)
+    },
+    prediction: {
+      type:
+        cryptoData.prediction === 1
+          ? 'bullish'
+          : cryptoData.prediction === -1
+          ? 'bearish'
+          : 'neutral',
+      text: cryptoData.summary,
+      confidence: cryptoData.confidence ? Math.round(cryptoData.confidence * 100) : 0
+    },
+    socialMentions: [
+      ...(cryptoData.reddit.most_popular_post ? [{
+        platform: 'Reddit',
+        text: cryptoData.reddit.most_popular_post.title,
+        sentiment: formattedData?.sentiment.overall || 'Neutral',
+        time: 'recent'
+      }] : []),
+      ...(cryptoData.twitter.most_popular_tweet ? [{
+        platform: 'Twitter',
+        text: cryptoData.twitter.most_popular_tweet.text,
+        sentiment: formattedData?.sentiment.overall || 'Neutral',
+        time: 'recent'
+      }] : [])
+    ]
+  };
+}
+    setCryptoData(formattedData);
   } catch (err) {
     console.error('Error:', err);
     setError(`Failed to analyze ${cryptoName}. Please try again.`);
@@ -60,7 +129,6 @@ function App() {
   }
 };
 
-  
 
   
 
