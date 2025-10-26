@@ -12,7 +12,7 @@ app = Flask(__name__)
 CORS(app)
 
 COINGECKO_URL = "https://api.coingecko.com/api/v3/simple/price"
-BEARER_TOKEN = "AAAAAAAAAAAAAAAAAAAAAOwe5AEAAAAAEqz3e1YdEhcUaZZqS1RJ8ELjSAA%3DuePghPPj3BkeHVMsyhkDxn2u1g5SFVm7DwPFwhfCSL7KxnOqJg"  # 🔑 Replace before deployment
+BEARER_TOKEN = "YOURAPIKEY"  # 🔑
 
 # ---------------------------
 # Load trained ML model (optional)
