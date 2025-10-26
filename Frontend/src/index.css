@@ -1,0 +1,80 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    --background: 220 25% 8%;
+    --foreground: 210 40% 98%;
+
+    --card: 220 20% 12%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 220 25% 10%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 195 100% 50%;
+    --primary-foreground: 220 25% 8%;
+
+    --secondary: 220 20% 16%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 220 20% 16%;
+    --muted-foreground: 215 20% 65%;
+
+    --accent: 195 100% 50%;
+    --accent-foreground: 220 25% 8%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 210 40% 98%;
+
+    --success: 142 76% 36%;
+    --success-foreground: 210 40% 98%;
+
+    --border: 220 20% 18%;
+    --input: 220 20% 18%;
+    --ring: 195 100% 50%;
+
+    --radius: 0.75rem;
+
+    --chart-1: 195 100% 50%;
+    --chart-2: 142 76% 36%;
+    --chart-3: 0 72% 51%;
+    --chart-4: 280 100% 70%;
+    --chart-5: 45 100% 50%;
+
+    --gradient-primary: linear-gradient(135deg, hsl(195 100% 50% / 0.2), hsl(195 100% 50% / 0.05));
+    --gradient-success: linear-gradient(135deg, hsl(142 76% 36% / 0.2), hsl(142 76% 36% / 0.05));
+    --gradient-danger: linear-gradient(135deg, hsl(0 72% 51% / 0.2), hsl(0 72% 51% / 0.05));
+
+    --glass-bg: hsl(220 20% 12% / 0.6);
+    --glass-border: hsl(220 20% 18% / 0.5);
+
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    background-image: 
+      radial-gradient(circle at 20% 20%, hsl(195 100% 50% / 0.08) 0%, transparent 50%),
+      radial-gradient(circle at 80% 80%, hsl(280 100% 70% / 0.08) 0%, transparent 50%);
+  }
+
+  .glass-card {
+    @apply backdrop-blur-xl bg-card/60 border-border/50;
+  }
+
+  .gradient-text {
+    @apply bg-gradient-to-r from-primary to-purple-400 bg-clip-text text-transparent;
+  }
+}

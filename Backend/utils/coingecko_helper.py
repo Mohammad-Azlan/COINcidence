@@ -1,26 +1,32 @@
-import requests
-
-BASE_URL = "https://api.coingecko.com/api/v3"
-
-def get_crypto_price(coin_id):
-    """
-    Fetch current price and 24h change for a crypto coin
-    coin_id example: 'bitcoin', 'ethereum', 'solana'
-    """
-    url = f"{BASE_URL}/simple/price"
-    params = {
-        "ids": coin_id.lower(),
-        "vs_currencies": "usd",
-        "include_24hr_change": "true"
+# In your analyze() function, replace the price fetch with:
+try:
+    # Map common crypto names to CoinGecko IDs
+    crypto_map = {
+        "bitcoin": "bitcoin",
+        "ethereum": "ethereum",
+        "solana": "solana",
+        "btc": "bitcoin",
+        "eth": "ethereum",
+        "sol": "solana"
     }
-    try:
-        response = requests.get(url, params=params)
-        data = response.json()
-        if coin_id.lower() in data:
-            price = data[coin_id.lower()]["usd"]
-            change_24h = data[coin_id.lower()]["usd_24h_change"]
-            return {"price": price, "change_24h": change_24h}
-        else:
-            return {"error": "Coin not found"}
-    except Exception as e:
-        return {"error": str(e)}
+    
+    coin_id = crypto_map.get(crypto_name, crypto_name)
+    
+    res = requests.get(
+        f"{COINGECKO_URL}",
+        params={
+            "ids": coin_id,
+            "vs_currencies": "usd",
+            "include_24hr_change": "true",
+            "include_market_cap": "true"
+        }
+    )
+    price_data = res.json().get(coin_id, {})
+    current_price = price_data.get("usd", 0)
+    change_24h = price_data.get("usd_24h_change", 0)
+    market_cap = price_data.get("usd_market_cap", 0)
+except Exception as e:
+    print("⚠️ Price fetch failed:", e)
+    current_price = 0
+    change_24h = 0
+    market_cap = 0
