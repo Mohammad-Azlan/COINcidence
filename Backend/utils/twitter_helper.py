@@ -4,7 +4,7 @@ import tweepy
 # -------------------------
 # 1️⃣ Twitter API Credentials
 # -------------------------
-BEARER_TOKEN = "AAAAAAAAAAAAAAAAAAAAAOwe5AEAAAAAEqz3e1YdEhcUaZZqS1RJ8ELjSAA%3DuePghPPj3BkeHVMsyhkDxn2u1g5SFVm7DwPFwhfCSL7KxnOqJg"  # Replace with your actual token
+BEARER_TOKEN = "APIKEY"  # Replace with your actual token
 
 # -------------------------
 # 2️⃣ Tweepy Client Setup
