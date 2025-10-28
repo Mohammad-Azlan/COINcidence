@@ -4,11 +4,8 @@ import praw
 reddit = praw.Reddit(
     client_id="YOUR_CLIENT_ID",
     client_secret="YOUR_CLIENT_SECRET",
-    username="YOUR_REDDIT_USERNAME",
-    password="YOUR_REDDIT_PASSWORD",
-    user_agent="crypto_sentiment_app"
+    user_agent="YOUR_USER_AGENT"
 )
-
 def fetch_crypto_posts(coin_name, limit=10):
     """
     Fetch latest posts mentioning the coin from relevant subreddits

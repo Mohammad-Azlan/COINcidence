@@ -12,125 +12,82 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // const handleSearch = async (cryptoName) => {
-  //   setIsLoading(true);
-  //   setError(null);
-    
-  //   // Simulate API call delay
-  //   setTimeout(() => {
-  //     const data = mockCryptoData[cryptoName];
-      
-  //     if (data) {
-  //       setCryptoData(data);
-  //     } else {
-  //       setError(`Cryptocurrency "${cryptoName}" not found. Try bitcoin, ethereum, or solana.`);
-  //     }
-      
-  //     setIsLoading(false);
-  //   }, 2000);
-  // };
-
-//   const handleSearch = async (cryptoName) => {
-//   setIsLoading(true);
-//   setError(null);
-  
-//   try {
-//     // Call your Flask backend API
-//     const response = await fetch('http://localhost:5000/analyze', {
-//       method: 'POST',
-//       headers: {
-//         'Content-Type': 'application/json',
-//       },
-//       body: JSON.stringify({ crypto_name: cryptoName }),
-//     });
-    
-//     if (!response.ok) {
-//       throw new Error('Failed to fetch data');
-//     }
-    
-//     const data = await response.json();
-//     setCryptoData(data);
-    
-//   } catch (err) {
-//     console.error('Error:', err);
-//     setError(`Failed to analyze ${cryptoName}. Please try again.`);
-//   } finally {
-//     setIsLoading(false);
-//   }
-// };
-
   const handleSearch = async (cryptoName) => {
-  setIsLoading(true);
-  setError(null);
+    setIsLoading(true);
+    setError(null);
 
-  try {
-    //const response = await fetch(`http://localhost:5000/api/crypto/${cryptoName.toLowerCase()}`);
-    const response = await fetch(`http://localhost:5000/api/crypto/${cryptoName.toLowerCase()}`);
+    try {
+      const response = await fetch(`http://localhost:5000/api/crypto/${cryptoName.toLowerCase()}`);
 
-    if (!response.ok) throw new Error('Failed to fetch data');
 
-    const data = await response.json();
-    setCryptoData(data);
-    let formattedData = null;
+      if (!response.ok) throw new Error('Failed to fetch data');
 
-if (cryptoData) {
-  formattedData = {
-    name: cryptoData.crypto.charAt(0).toUpperCase() + cryptoData.crypto.slice(1),
-    symbol: cryptoData.crypto.slice(0, 3).toUpperCase(),
-    price: cryptoData.price_usd,
-    change24h: cryptoData.counts?.percent_change_24h || 0, // if you fetch it
-    marketCap: cryptoData.counts?.market_cap || 'N/A',       // optional
-    sentiment: {
-      overall:
-        cryptoData.average_sentiment > 0.05
-          ? 'Positive'
-          : cryptoData.average_sentiment < -0.05
-          ? 'Negative'
-          : 'Neutral',
-      confidence: cryptoData.confidence ? Math.round(cryptoData.confidence * 100) : 0
-    },
-    distribution: {
-      positive: Math.round(Math.max(cryptoData.reddit.average_sentiment, cryptoData.twitter.average_sentiment) * 100),
-      negative: Math.round(Math.abs(Math.min(cryptoData.reddit.average_sentiment, cryptoData.twitter.average_sentiment)) * 100),
-      neutral: 100 - Math.round(Math.max(cryptoData.reddit.average_sentiment, cryptoData.twitter.average_sentiment) * 100) - Math.round(Math.abs(Math.min(cryptoData.reddit.average_sentiment, cryptoData.twitter.average_sentiment)) * 100)
-    },
-    prediction: {
-      type:
-        cryptoData.prediction === 1
-          ? 'bullish'
-          : cryptoData.prediction === -1
-          ? 'bearish'
-          : 'neutral',
-      text: cryptoData.summary,
-      confidence: cryptoData.confidence ? Math.round(cryptoData.confidence * 100) : 0
-    },
-    socialMentions: [
-      ...(cryptoData.reddit.most_popular_post ? [{
-        platform: 'Reddit',
-        text: cryptoData.reddit.most_popular_post.title,
-        sentiment: formattedData?.sentiment.overall || 'Neutral',
-        time: 'recent'
-      }] : []),
-      ...(cryptoData.twitter.most_popular_tweet ? [{
-        platform: 'Twitter',
-        text: cryptoData.twitter.most_popular_tweet.text,
-        sentiment: formattedData?.sentiment.overall || 'Neutral',
-        time: 'recent'
-      }] : [])
-    ]
+      const data = await response.json();
+
+      // --- Format social mentions properly ---
+      const socialMentions = [];
+
+      if (data.reddit?.most_popular_post) {
+        socialMentions.push({
+          platform: 'Reddit',
+          text: data.reddit.most_popular_post.title,
+          // Use platform-specific average for post sentiment label
+          sentiment: data.reddit.average_sentiment > 0.05 ? 'Positive'
+                   : data.reddit.average_sentiment < -0.05 ? 'Negative'
+                   : 'Neutral',
+          time: 'recent'
+        });
+      }
+
+      if (data.twitter?.most_popular_tweet) {
+        socialMentions.push({
+          platform: 'Twitter',
+          text: data.twitter.most_popular_tweet.text,
+          // Use platform-specific average for post sentiment label
+          sentiment: data.twitter.average_sentiment > 0.05 ? 'Positive'
+                   : data.twitter.average_sentiment < -0.05 ? 'Negative'
+                   : 'Neutral',
+          time: 'recent'
+        });
+      }
+
+      const formattedData = {
+        name: data.crypto.charAt(0).toUpperCase() + data.crypto.slice(1),
+        symbol: data.crypto.slice(0, 3).toUpperCase(),
+        price: data.price_usd,
+        change24h: data.pct_change || 0,
+        marketCap: 'N/A',
+        sentiment: {
+          overall: data.average_sentiment > 0.05 ? 'Positive'
+                   : data.average_sentiment < -0.05 ? 'Negative'
+                   : 'Neutral',
+          confidence: data.confidence ? Math.round(data.confidence * 100) : 0,
+          average_sentiment: data.average_sentiment // Pass the raw score for the chart
+        },
+        // *** REMOVED: The redundant and flawed 'distribution' object ***
+        prediction: {
+          type: data.prediction === 1 ? 'bullish'
+                : data.prediction === -1 ? 'bearish'
+                : 'neutral',
+          text: data.summary,
+          confidence: data.confidence ? Math.round(data.confidence * 100) : 0
+        },
+        socialMentions
+      };
+
+      setCryptoData(formattedData);
+    } catch (err) {
+      console.error('Error:', err);
+      // Ensure the error response from Flask is handled for 404
+      const errorMessage = (err.message === 'Failed to fetch data') 
+                         ? `Could not find data for that crypto. Try 'bitcoin' or 'ethereum'.`
+                         : `Failed to analyze ${cryptoName}. Please try again.`;
+      setError(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
   };
-}
-    setCryptoData(formattedData);
-  } catch (err) {
-    console.error('Error:', err);
-    setError(`Failed to analyze ${cryptoName}. Please try again.`);
-  } finally {
-    setIsLoading(false);
-  }
-};
 
-
-  
 
   return (
     <div className="min-h-screen bg-gray-900">
